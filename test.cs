@@ -488,7 +488,7 @@ namespace OpenCV_test01
             int car_no;
             Console.Write("차량 영상 번호 (0-20) : ");
             car_no = int.Parse(Console.ReadLine());
-            string fn = string.Format(path+"test_car\\%02d.jpg", car_no);
+            string fn = string.Format(path+"test_car\\{0:D2}.jpg", car_no);
             Mat image = Cv2.ImRead(fn, ImreadModes.Color);
             if (image.Empty())
             {
