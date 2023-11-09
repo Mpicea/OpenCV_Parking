@@ -490,6 +490,8 @@ namespace OpenCV_test01
             SVM svm = SVM.Load(path+"\\SVMtrain.xml");
 
             int car_no;
+
+            
             Console.Write("차량 영상 번호 (0-20) : ");
             car_no = int.Parse(Console.ReadLine());
             string fn = string.Format(path+ "test_car\\{0:D2}.jpg", car_no);
@@ -541,6 +543,8 @@ namespace OpenCV_test01
 
             Cv2.ImShow("image", image);
             Cv2.WaitKey();
+
+            System.GC.Collect();
         }
     }
 }
