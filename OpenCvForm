@@ -1,0 +1,143 @@
+using OpenCvSharp;
+using OpenCvSharp.Dnn;
+using OpenCvSharp.Extensions;
+using System;
+using System.Drawing;
+
+namespace OpenCvForm
+{
+    public partial class Form1 : Form
+    {
+        private VideoCapture capture;
+        private Mat frame;
+        private bool isRunning = false;
+        private bool FaceDetect = false;
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            capture = new VideoCapture(0);
+            frame = new Mat();
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            if (isRunning)
+            {
+                isRunning = false;
+                return;
+            }
+            isRunning = true;
+            while (isRunning)
+            {
+                if (capture.IsOpened())
+                {
+                    capture.Read(frame);
+
+                    if (FaceDetect)
+                    {
+                        const string cfgFile = "C:\\Temp\\darknet_model\\yolov3.cfg";
+                        const string darknetModel = "C:\\Temp\\darknet_model\\yolov3.weights";
+                        string[] classNames = File.ReadAllLines("C:\\Temp\\darknet_model\\yolov3.txt");
+
+                        using (Mat image = new Mat())
+                        {
+                            using (Net net = Net.ReadNetFromDarknet(cfgFile, darknetModel))
+                            {
+                                capture.Read(image); // 프레임 캡처
+
+                                if (image.Empty())
+                                    return;
+
+                                List<string> labels = new List<string>();
+                                List<float> scores = new List<float>();
+                                List<Rect> bboxes = new List<Rect>();
+
+                                Mat inputBlob = CvDnn.BlobFromImage(image, 1 / 255f, new OpenCvSharp.Size(416, 416), crop: false);
+
+                                net.SetInput(inputBlob);
+                                var outBlobNames = net.GetUnconnectedOutLayersNames();
+                                var outputBlobs = outBlobNames.Select(toMat => new Mat()).ToArray();
+
+                                net.Forward(outputBlobs, outBlobNames);
+                                foreach (Mat prob in outputBlobs)
+                                {
+                                    for (int p = 0; p < prob.Rows; p++)
+                                    {
+                                        float confidence = prob.At<float>(p, 4);
+                                        if (confidence > 0.9)
+                                        {
+                                            Cv2.MinMaxLoc(prob.Row(p).ColRange(5, prob.Cols), out _, out _, out _, out OpenCvSharp.Point classNumber);
+
+                                            int classes = classNumber.X;
+                                            float probability = prob.At<float>(p, classes + 5);
+
+                                            //if (probability > 0.9 && classNames[classes] != "person") //사람감지X
+                                            if (probability > 0.9)
+                                            {
+                                                float centerX = prob.At<float>(p, 0) * image.Width;
+                                                float centerY = prob.At<float>(p, 1) * image.Height;
+                                                float width = prob.At<float>(p, 2) * image.Width;
+                                                float height = prob.At<float>(p, 3) * image.Height;
+
+                                                labels.Add(classNames[classes]);
+                                                scores.Add(probability);
+                                                bboxes.Add(new Rect((int)centerX - (int)width / 2, (int)centerY - (int)height / 2, (int)width, (int)height));
+                                            }
+                                        }
+                                    }
+                                }
+
+                                CvDnn.NMSBoxes(bboxes, scores, 0.9f, 0.5f, out int[] indices);
+
+                                foreach (int i in indices)
+                                {
+                                    Cv2.Rectangle(image, bboxes[i], Scalar.Red, 1);
+                                    Cv2.PutText(image, labels[i], bboxes[i].Location, HersheyFonts.HersheyComplex, 1.0, Scalar.Red);
+
+                                    // 감지된 데이터를 ListBox1에 추가
+                                     listBox1.Items.Add("Label: " + labels[i]);
+                                    listBox1.Items.Add("Confidence: " + scores[i]);
+                                    listBox1.Items.Add("Bounding Box: " + bboxes[i]);
+                                    listBox1.Items.Add("");
+                                }
+
+                                pictureBox1.Image = BitmapConverter.ToBitmap(image);
+                            }
+                        }
+                    }
+                    else // FaceDetect가 false일 때는 원본 프레임을 표시
+                    {
+                        pictureBox1.Image = BitmapConverter.ToBitmap(frame);
+                    }
+                }
+                await Task.Delay(33);
+                Cv2.WaitKey(1);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            FaceDetect = !FaceDetect;
+            //listBox1.Items.Clear(); //listbox제거
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            listBox1.Items.Add("Hello?");
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            isRunning = false;
+            capture.Release();
+            this.Close();
+        }
+
+
+    }
+}
