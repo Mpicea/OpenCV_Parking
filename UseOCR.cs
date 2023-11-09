@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 
 namespace OpenCV_test01
 {
-
-    public class Parking
+    public class UseOcr
     {
+        /*존재함*/
         public void refine_candidate(Mat image, ref RotatedRect candi)
         {
             Size newSize = new Size(image.Cols + 2, image.Rows + 2);
@@ -47,8 +47,9 @@ namespace OpenCV_test01
             Rect img_rect = new Rect(new Point(0, 0), image.Size());
             for(int i = 0; i<rand_pt.Count; i++)
             {
-                Point2f seed = new Point2f(candi.Center.X + rand_pt[i].X, candi.Center.Y + rand_pt[i].Y); // 랜덤좌표 평행이동
-                if (img_rect.Contains((int)seed.X, (int)seed.Y)==true);
+                Point seed = new Point(candi.Center.X + rand_pt[i].X, candi.Center.Y + rand_pt[i].Y); // 랜덤좌표 평행이동
+                if (img_rect.Contains((int)seed.X, (int)seed.Y)==true)
+                    Cv2.FloodFill(image, fill, seed, Scalar.All(0), out Rect rect, dif1, dif2, (FloodFillFlags)flags); ;
             }
 
             // 채움 영역 사각형 계산
@@ -67,6 +68,7 @@ namespace OpenCV_test01
             candi = Cv2.MinAreaRect(fill_pts);
         }
 
+        /*correct_plate와 유사함*/
         public void rotate_plate(Mat image,ref Mat corp_img, RotatedRect candi)
         {
             // 종횡비 
@@ -93,13 +95,17 @@ namespace OpenCV_test01
             Cv2.GetRectSubPix(corp_img, testSize, candi.Center, corp_img);
         }
 
+        /*존재 함*/
         public List<Mat> make_candidates(Mat image, ref List<RotatedRect> candidates)
         {
             //vector<Mat> candidates_img;
             List<Mat> candidates_img = new List<Mat>();
             for (int i = 0; i < candidates.Count;)
-            {   RotatedRect testrect = candidates[i];
+            {   
+                RotatedRect testrect = candidates[i];
                 refine_candidate(image, ref testrect);     // 후보 영역 개선
+                candidates[i] = testrect;
+
                 if (vertify_plate(candidates[i]))               // 개선 영역 재검증
                 {
                     Mat corp_img = new Mat();
@@ -177,7 +183,9 @@ namespace OpenCV_test01
             Mat pos_x = new Mat();
             for (int i = 0; i < object_rects.Count; i++)
             {
-                pos_x.Add(object_rects[i].X);
+                /*확인해볼 것*/
+                //pos_x.Add(object_rects[i].X);
+                pos_x.PushBack(object_rects[i].X);
             }
 
             Cv2.SortIdx(pos_x, pos_x, SortFlags.EveryColumn | SortFlags.Ascending);
@@ -217,12 +225,39 @@ namespace OpenCV_test01
                 //		imshow("number_" + to_string(i - 1), num);
             }
         }
-
-        public void find_histoPos(Mat img, ref int start, ref int end, int direct)
+        
+        public Mat ReduceImage(Mat input, int reduceDimension)
         {
-            Cv2.Reduce(img, img, (ReduceDimension)direct, ReduceTypes.Avg, 0);
+            if (reduceDimension == 0)
+            {
+                // 축소 방향이 행 (행 방향으로 축소)
+                Size newSize = new Size(input.Cols, 1);
+                Mat reducedImage = new Mat();
+                //Cv2.Resize(input, reducedImage, newSize, interpolation: InterpolationFlags.Avg);
+                Cv2.Resize(input, reducedImage, newSize, interpolation : InterpolationFlags.Area);
+                return reducedImage;
+            }
+            else if (reduceDimension == 1)
+            {
+                // 축소 방향이 열 (열 방향으로 축소)
+                Size newSize = new Size(1, input.Rows);
+                Mat reducedImage = new Mat();
+                Cv2.Resize(input, reducedImage, newSize, interpolation: InterpolationFlags.Area);
+                return reducedImage;
+            }
+            else
+            {
+                // 다른 축소 방향에 대한 처리 추가
+                return input; // 또는 에러 처리
+            }
+        }
+        
+        public void find_histoPos(Mat img, ref int start, ref int end, ReduceDimension direct)
+        {
+            //Cv2.Reduce(img, img, direct, ReduceTypes.Avg, MatType.CV_32F);
+            img = ReduceImage(img, (int)direct);
             int minFound = 0;
-            for (int i = 0; i < img.Total(); i++)
+            for (int i = 0; i < (int)img.Total(); i++)
             {
                 if (img.At<Byte>(i) < 250)         // 빈라인이 아니면
                 {
@@ -235,74 +270,28 @@ namespace OpenCV_test01
                 }
             }
         }
-
-        /*
-        public void find_histoPos(Mat img, ref Point start, ref Point end, int direct)
-        {
-            Mat reducedImg = new Mat();
-            Cv2.Reduce(img, reducedImg, (ReduceDimension)direct, ReduceTypes.Avg, 0);
-
-            int minFound = 0;
-            for (int i = 0; i < reducedImg.Cols; i++)
-            {
-                if (reducedImg.At<byte>(0, i) < 250) // 빈 라인이 아니면
-                {
-                    end.X = i; // 히스토그램 마지막 위치
-                    if (minFound == 0)
-                    {
-                        start.X = i; // 히스토그램 첫 위치
-                        minFound = 1;
-                    }
-                }
-            }
-        }
-        */
         public Mat find_number(Mat part)
         {
             Point start = new Point();
             Point end = new Point();
-            //Size end = new Size();
-            find_histoPos(part, ref start.X, ref end.X, 0);     // 수직 투영 
-            find_histoPos(part, ref start.Y, ref end.Y, 1);     // 수평 투영 
+            find_histoPos(part, ref start.X, ref end.X, ReduceDimension.Row);     // 수직 투영 
+            find_histoPos(part, ref start.Y, ref end.Y, ReduceDimension.Column);     // 수평 투영 
 
+            int x = Math.Min(start.X, end.X);
+            int y = Math.Min(start.Y, end.Y);
+            int width = Math.Abs(start.X - end.X);
+            int height = Math.Abs(start.Y - end.Y);
 
-            return part[new Rect(start, new Size(end.X-start.X, end.Y - start.Y))];              // 숫자객체 영상
-            //return part.SubMat(new Rect(start, end));
+            x = Math.Max(x, 0);
+            y = Math.Max(y, 0);
+            width = Math.Min(width, part.Cols - x);
+            height = Math.Min(height, part.Rows - y);
+
+            Rect roi = new Rect(new Point(x, y), new Size(width, height));
+
+            //return part[new Rect(start, new Size(end.X-start.X, end.Y - start.Y))];              // 숫자객체 영상
+            return part.SubMat(roi);
         }
-        /*
-        public Mat find_number(Mat part)
-        {
-            Point start = new Point();
-            Size end = new Size();
-            find_histoPos(part, ref start.X, ref end.Width, 0);     // 수직 투영 
-            find_histoPos(part, ref start.Y, ref end.Height, 1);     // 수평 투영 
-
-
-            return part[new Rect(start, end)];              // 숫자객체 영상
-            //return part.SubMat(new Rect(start, end));
-        }
-        */
-
-        /*
-        public Mat find_number(Mat part)
-        {
-            Point start = new Point();
-            Point end = new Point();
-            find_histoPos(part, ref start, ref end, 0); // 수직 투영 
-            find_histoPos(part, ref start, ref end, 1); // 수평 투영 
-
-            Rect roi = new Rect(start, new Size(end.X - start.X, end.Y - start.Y));
-            if (roi.Width > 0 && roi.Height > 0)
-            {
-                Mat numberMat = new Mat(part, roi); // 숫자 객체 영상
-                return numberMat.Clone();
-            }
-            else
-            {
-                return null; // 유효하지 않은 영역인 경우 null 또는 빈 Mat을 반환할 수 있습니다.
-            }
-        }
-        */
 
         public Mat place_middle(Mat number, Size new_size)
         {
@@ -327,7 +316,7 @@ namespace OpenCV_test01
             Size size = new Size(40, 40);                                  // 셀 크기
             Mat trainData = new Mat();
             Mat classLable = new Mat();
-            Mat train_image = Cv2.ImRead(train_img, ImreadModes.Grayscale);         // 전체 학습영상 로드
+            Mat train_image = Cv2.ImRead(train_img, (ImreadModes)0);         // 전체 학습영상 로드
             if (train_image.Empty())
             {
                 Console.WriteLine("이미지를 불러오지 못하였습니다.");
@@ -345,8 +334,12 @@ namespace OpenCV_test01
 
                     Mat num = find_number(part);            // 숫자객체 검출
                     Mat data = place_middle(num, size);         // 셀 중심에 숫자 배치 
-                    trainData.Add(data);                      // 학습 데이터 수집
-                    classLable.Add(i);                        // 레이블링
+                    //trainData.Add(data);                      // 학습 데이터 수집
+                    //classLable.Add(i);                        // 레이블링
+                    //Cv2.VConcat(trainData, data, trainData);
+                    //Cv2.VConcat(classLable, new Mat(data.Rows, 1, MatType.CV_32S)*i, classLable);
+                    trainData.PushBack(data);
+                    classLable.PushBack(i);
                 }
             }
 
@@ -355,6 +348,7 @@ namespace OpenCV_test01
             return knn;
         }
 
+        /*존재 함*/
         public Mat preprocessing(Mat image)
         {
             Mat gray = new Mat();
@@ -372,6 +366,7 @@ namespace OpenCV_test01
             return morph;
         }
 
+        /*존재 함*/
         public bool vertify_plate(RotatedRect mr)
         {
             float size = mr.Size.Height * mr.Size.Width;
@@ -384,6 +379,7 @@ namespace OpenCV_test01
             return ch1 && ch2;
         }
 
+        /*존재 함*/
         public void find_candidates(Mat img, ref List<RotatedRect> candidates)
         {
             Point[][] contours;             // 외곽선
@@ -399,6 +395,7 @@ namespace OpenCV_test01
             }
         }
 
+        /*존재 함*/
         public void draw_rotatedRect(ref Mat img, RotatedRect mr, Scalar color, int thickness = 2)
         {
             Point[] pts = new Point[4];
@@ -422,8 +419,13 @@ namespace OpenCV_test01
             }
         }
 
+        /*존재함*/
         public void read_trainData(string fn, ref Mat trainingData, ref Mat lables)
         {
+            if (lables.Empty())
+            {
+                lables = new Mat();
+            }
             using(FileStorage fs = new FileStorage(fn, FileStorage.Modes.Read))
             {
                 if (!fs.IsOpened())
@@ -439,6 +441,7 @@ namespace OpenCV_test01
             trainingData.ConvertTo(trainingData, MatType.CV_32FC1);
         }
 
+        /*SVM_train과 유사함*/
         public SVM SVM_create(int type, int max_iter, double epsilon)
         {
             SVM svm = SVM.Create();       // SVM 객체 선언
@@ -454,6 +457,7 @@ namespace OpenCV_test01
             
         }
 
+        /*존재함*/
         public int classify_plates(SVM svm, List<Mat> candi_img)
         {
             for (int i = 0; i < candi_img.Count; i++)
@@ -474,13 +478,13 @@ namespace OpenCV_test01
     {
         static void Main(string[] args)
         {
-            Parking parking = new Parking();
+            UseOcr useOcr = new UseOcr();
 
             int K1 = 15, K2 = 15;
             KNearest[] knn = new KNearest[2];
             string path = "C:\\Users\\Admin\\source\\openCV_Parking\\image\\";
-            knn[0] = parking.kNN_train(path+"trainimage\\train_numbers2001.png", K1, 10, 20);
-            knn[1] = parking.kNN_train(path+"trainimage\\train_texts.png", K2, 25, 20);
+            knn[0] = useOcr.kNN_train(path+"trainimage\\train_numbers2001.png", K1, 10, 20);
+            knn[1] = useOcr.kNN_train(path+"trainimage\\train_texts.png", K2, 25, 20);
 
             // 	학습된 데이터 로드
             SVM svm = SVM.Load(path+"\\SVMtrain.xml");
@@ -488,7 +492,7 @@ namespace OpenCV_test01
             int car_no;
             Console.Write("차량 영상 번호 (0-20) : ");
             car_no = int.Parse(Console.ReadLine());
-            string fn = string.Format(path+"test_car\\{0:D2}.jpg", car_no);
+            string fn = string.Format(path+ "test_car\\{0:D2}.jpg", car_no);
             Mat image = Cv2.ImRead(fn, ImreadModes.Color);
             if (image.Empty())
             {
@@ -496,12 +500,12 @@ namespace OpenCV_test01
                 Environment.Exit(1);
             }
 
-            Mat morph = parking.preprocessing(image);                               // 전처리
+            Mat morph = useOcr.preprocessing(image);                               // 전처리
             List<RotatedRect> candidates = new List<RotatedRect>();
-            parking.find_candidates(morph, ref candidates);                                 // 후보 영역 검출
-            List<Mat> candidate_img = parking.make_candidates(image, ref candidates);// 후보 영상 생성
+            useOcr.find_candidates(morph, ref candidates);                                 // 후보 영역 검출
+            List<Mat> candidate_img = useOcr.make_candidates(image, ref candidates);// 후보 영상 생성
 
-            int plate_no = parking.classify_plates(svm, candidate_img);         // SVM 분류
+            int plate_no = useOcr.classify_plates(svm, candidate_img);         // SVM 분류
 
             if (plate_no >= 0)
             {
@@ -511,12 +515,12 @@ namespace OpenCV_test01
                 Mat plate_img = new Mat();
                 Mat color_plate = new Mat();                             // 컬러 번호판 영상 
 
-                parking.preprocessing_plate(candidate_img[plate_no], ref plate_img);    // 번호판 영상 전처리
+                useOcr.preprocessing_plate(candidate_img[plate_no], ref plate_img);    // 번호판 영상 전처리
                 Cv2.CvtColor(plate_img, color_plate, ColorConversionCodes.GRAY2BGR);
 
-                parking.find_objects(~plate_img, ref obejct_rects);     // 숫자 및 문자 검출  
+                useOcr.find_objects(~plate_img, ref obejct_rects);     // 숫자 및 문자 검출  
 
-                parking.sort_rects(obejct_rects, ref sorted_rects);         // 검출객체 정렬(x 좌표기준)
+                useOcr.sort_rects(obejct_rects, ref sorted_rects);         // 검출객체 정렬(x 좌표기준)
 
                 for (int i = 0; i < sorted_rects.Count; i++)
                 {
@@ -526,12 +530,12 @@ namespace OpenCV_test01
 
                 if (numbers.Count == 7)
                 {
-                    parking.classify_numbers(numbers, knn, K1, K2);     // kNN 분류 수행
+                    useOcr.classify_numbers(numbers, knn, K1, K2);     // kNN 분류 수행
                 }
                 else Console.WriteLine("숫자(문자) 객체를 정확히 검출하지 못했습니다.");
 
                 Cv2.ImShow("번호판 영상", color_plate);                  // 번호판 영상 표시
-                parking.draw_rotatedRect(ref image, candidates[plate_no], new Scalar(0, 0, 255), 2);
+                useOcr.draw_rotatedRect(ref image, candidates[plate_no], new Scalar(0, 0, 255), 2);
             }
             else Console.WriteLine("번호판을 검출하지 못하였습니다. ");
 
