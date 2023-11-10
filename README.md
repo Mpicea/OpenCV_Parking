@@ -5,7 +5,7 @@ C#과 OpenCV를 활용한 주차장
 
 ### 프로젝트
 |프로젝트|Visual Studio 플랫폼|설명|작성한 분|
-|:---:||:---:|:---:|:---:|
+|:---:|:---:|:---:|:---:|
 |NotOCR.cs|콘솔 앱(.NET Framework)|OCR을 쓰지않고 자동차 번호판 추출|장지현님|
 |NotOCRTesseract.cs|콘솔 앱(.NET Framework)|NotOCR + 글자 인식(Tesseract)|황형선님|
 |Object detect.cs|콘솔 앱(.NET Framework)|객체(차종) 인식|장효원님|
