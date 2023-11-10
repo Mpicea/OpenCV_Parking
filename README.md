@@ -1,7 +1,7 @@
 # OpenCV_Parking
 C#과 OpenCV를 활용한 주차장으로 Visual Studio 2022를 기반으로 만들었습니다.   
 
-<br/><br/>
+<br/>
 
 ### 프로젝트
 |프로젝트|Visual Studio 플랫폼|설명|작성한 분|
