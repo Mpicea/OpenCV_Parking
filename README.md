@@ -40,6 +40,7 @@ C#과 OpenCV를 활용한 주차장으로 Visual Studio 2022를 기반으로 만
 <details>
 <summary>기타 사항</summary>  
 * 존재함 주석이 있는데 이는 NotOCR과 UseOCR 공통점을 찾는다고 개인적으로 표시한 것입니다  
+<br/>
 * UseOCR은 C++을 C#으로 변환하여 작업한 코드이기에 데이터 누수 등이 발생할 수 있습니다.  
 </details>
 
