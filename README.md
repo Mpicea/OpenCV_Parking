@@ -1,6 +1,6 @@
 # OpenCV_Parking
 C#과 OpenCV를 활용한 주차장   
----  
+<br/><br/><br/>
 ### 프로젝트
 |프로젝트|설명|작성한 분|
 |:---:|:---:|:---:|
@@ -13,6 +13,8 @@ C#과 OpenCV를 활용한 주차장
 |UseOCR.cs|OCR을 사용하고 자동차 번호판 추출|장지현님|
 |lane_violation|차선 인식과 그 외 프로그램|문도원님|
 
+<br/>
+
 ### 자료
 |자료명|설명|
 |:---:|:---:|
@@ -22,6 +24,7 @@ C#과 OpenCV를 활용한 주차장
 |lane_parking|차선 인식 데이터|
 |OpenCV_form.png|객체(차종) 인식 윈폼형태|  
   
+<br/><br/><br/>
 
 <details>
 <summary>기타 사항</summary>
