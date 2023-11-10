@@ -1,5 +1,5 @@
 # OpenCV_Parking
-C#과 OpenCV를 활용한 주차장   
+C#과 OpenCV를 활용한 주차장으로 Visual Studio 2022를 기반으로 만들었습니다.   
 
 <br/><br/>
 
@@ -10,8 +10,8 @@ C#과 OpenCV를 활용한 주차장
 |NotOCRTesseract.cs|콘솔 앱(.NET Framework)|NotOCR + 글자 인식(Tesseract)|황형선님|
 |Object detect.cs|콘솔 앱(.NET Framework)|객체(차종) 인식|장효원님|
 |OcrTesseract.cs|콘솔 앱(.NET Framework)|UseOCR + 글자 인식(Tesseract)|황형선님|
-|OpenCvForm|Windows Forms 앱(.NET Framework)|윈폼 형식의 Object detext.cs|장효원님|
-|TesseractWinform|Windows Forms 앱(.NET Framework)|윈폼 형식의 NotOCRTesseract.cs|황형선님|
+|OpenCvForm|Windows Forms 앱(.NET Framework)|객체(차종) 인식|장효원님|
+|TesseractWinform|Windows Forms 앱(.NET Framework)|NotOCR + 글자 인식(Tesseract)|황형선님|
 |The_Last_One.cs|Windows Forms 앱(.NET Framework)|통합본|황형선님|
 |UseOCR.cs|콘솔 앱(.NET Framework)|OCR을 사용하고 자동차 번호판 추출|장지현님|
 |lane_violation|콘솔 앱(.NET Framework)|차선 인식과 그 외 프로그램|문도원님|
@@ -26,6 +26,14 @@ C#과 OpenCV를 활용한 주차장
 |tesseract-5.2.0|tesseract 데이터|
 |lane_parking|차선 인식 데이터|
 |OpenCV_form.png|객체(차종) 인식 윈폼형태|  
+
+<br/>
+
+### Nuget 패키지 관리
+* OpenCvSharp4 4.8.0
+* OpenCvSharp4.Extensions 4.8.0
+* OpenCvSharp4.runtime.win 4.8.0
+* OpenCvSharp4.Windows 4.8.0
   
 <br/><br/><br/>
 
