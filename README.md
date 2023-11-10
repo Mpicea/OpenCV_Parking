@@ -12,7 +12,7 @@ C#과 OpenCV를 활용한 주차장으로 Visual Studio 2022를 기반으로 만
 |OcrTesseract.cs|콘솔 앱(.NET Framework)|UseOCR + 글자 인식(Tesseract)|황형선님|
 |OpenCvForm|Windows Forms 앱(.NET Framework)|객체(차종) 인식|장효원님|
 |TesseractWinform|Windows Forms 앱(.NET Framework)|NotOCR + 글자 인식(Tesseract)|황형선님|
-|The_Last_One.cs|Windows Forms 앱(.NET Framework)|통합 - 객체(차종) 인식, NotOCR 글자 인식, 차선 인식|황형선님|
+|The_Last_One.cs|Windows Forms 앱(.NET Framework)|통합 - 객체(차종) 인식, NotOCR + 글자 인식(Tesseract), 차선 인식|황형선님|
 |UseOCR.cs|콘솔 앱(.NET Framework)|OCR을 사용하고 자동차 번호판 추출|장지현님|
 |lane_violation|콘솔 앱(.NET Framework)|차선 인식과 그 외 프로그램|문도원님|
 
