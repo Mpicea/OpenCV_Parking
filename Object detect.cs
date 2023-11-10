@@ -53,7 +53,7 @@ namespace OpenCVdarknet
                                     int classes = classNumber.X;
                                     float probability = prob.At<float>(p, classes + 5);
 
-                                    if (probability > 0.9)
+                                    if (className == "car" || className == "motorcycle" || className == "bus" || className == "truck")
                                     {
                                         float centerX = prob.At<float>(p, 0) * image.Width;
                                         float centerY = prob.At<float>(p, 1) * image.Height;
