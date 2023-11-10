@@ -4,16 +4,17 @@ C#과 OpenCV를 활용한 주차장
 <br/><br/>
 
 ### 프로젝트
-|프로젝트|설명|작성한 분|
-|:---:|:---:|:---:|
-|NotOCR.cs|OCR을 쓰지않고 자동차 번호판 추출|장지현님|
-|NotOCRTesseract.cs|NotOCR + 글자 인식(Tesseract)|황형선님|
-|Object detect.cs|객체(차종) 인식|장효원님|
-|OcrTesseract.cs|UseOCR + 글자 인식(Tesseract)|황형선님|
-|OpenCvForm|윈폼 형식의 Object detext.cs|장효원님|
-|TesseractWinform|윈폼 형식의 NotOCRTesseract.cs|황형선님|
-|UseOCR.cs|OCR을 사용하고 자동차 번호판 추출|장지현님|
-|lane_violation|차선 인식과 그 외 프로그램|문도원님|
+|프로젝트|Visual Studio 플랫폼|설명|작성한 분|
+|:---:||:---:|:---:|:---:|
+|NotOCR.cs|콘솔 앱(.NET Framework)|OCR을 쓰지않고 자동차 번호판 추출|장지현님|
+|NotOCRTesseract.cs|콘솔 앱(.NET Framework)|NotOCR + 글자 인식(Tesseract)|황형선님|
+|Object detect.cs|콘솔 앱(.NET Framework)|객체(차종) 인식|장효원님|
+|OcrTesseract.cs|콘솔 앱(.NET Framework)|UseOCR + 글자 인식(Tesseract)|황형선님|
+|OpenCvForm|Windows Forms 앱(.NET Framework)|윈폼 형식의 Object detext.cs|장효원님|
+|TesseractWinform|Windows Forms 앱(.NET Framework)|윈폼 형식의 NotOCRTesseract.cs|황형선님|
+|The_Last_One.cs|Windows Forms 앱(.NET Framework)|통합본|황형선님|
+|UseOCR.cs|콘솔 앱(.NET Framework)|OCR을 사용하고 자동차 번호판 추출|장지현님|
+|lane_violation|콘솔 앱(.NET Framework)|차선 인식과 그 외 프로그램|문도원님|
 
 <br/>
 
