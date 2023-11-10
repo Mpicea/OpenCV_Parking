@@ -1,0 +1,48 @@
+using OpenCvSharp;
+using System;
+using System.Collections.Generic;
+
+
+namespace lane_violation
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            // 이미지 로드
+            Mat image = new Mat("C:\\Temp\\image\\parking2.jpg", ImreadModes.Color);
+
+            // 이미지 처리
+            Mat gray = new Mat();
+            Cv2.CvtColor(image, gray, ColorConversionCodes.BGR2GRAY);
+            Cv2.GaussianBlur(gray, gray, new Size(5, 5), 0);
+            Cv2.Canny(gray, gray, 50, 150);
+
+            // 흰색 픽셀을 감지하는 마스크 생성
+            Mat mask = new Mat();
+            Cv2.InRange(gray, new Scalar(50), new Scalar(255), mask);
+
+            //ROI 감지구역 설정
+            Mat roi = new Mat(mask, new Rect(0, mask.Rows / 2, mask.Cols, mask.Rows / 2));
+
+            // 마스크를 사용하여 흰색 선만 추출
+            Cv2.Canny(roi, gray, 50, 150);
+
+            // 주차된 차량 판별
+            LineSegmentPoint[] lines = Cv2.HoughLinesP(gray, 1, Math.PI / 180, 50, 50, 10);
+
+            foreach (var line in lines)
+            {               
+             // 빨간색으로 선 그리기
+             Cv2.Line(image, new Point(line.P1.X, line.P1.Y + mask.Rows / 2), new Point(line.P2.X, line.P2.Y + mask.Rows / 2), Scalar.Red, 2);
+            }
+            
+
+            // 결과 이미지 출력
+            Window.ShowImages(image);
+            Window.WaitKey(0);
+        }
+
+        
+    }
+}
