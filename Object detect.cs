@@ -76,9 +76,10 @@ namespace OpenCVdarknet
                             Cv2.PutText(image, labels[i], bboxes[i].Location, HersheyFonts.HersheyComplex, 1.0, Scalar.Red);
 
                             // 감지된 데이터를 콘솔에 출력
-                            Console.WriteLine("Label: " + labels[i]);
-                            Console.WriteLine("Confidence: " + scores[i]);
-                            Console.WriteLine("Bounding Box: " + bboxes[i]);
+                            listBox1.Items.Add("차종: " + labels[i]);
+                            listBox1.Items.Add("정확도: " + scores[i]);
+                            listBox1.Items.Add("좌표: " + bboxes[i]);
+                            listBox1.Items.Add("");
                         }
 
                         Cv2.ImShow("Camera", image);
